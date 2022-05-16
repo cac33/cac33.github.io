@@ -9,9 +9,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Christian Chin" />
 
+<meta name="date" content="2022-04-27" />
 
-<title>About Me</title>
+<title>Homework 4</title>
 
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -267,12 +269,42 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">About Me</h1>
+<h1 class="title toc-ignore">Homework 4</h1>
+<h4 class="author">Christian Chin</h4>
+<h4 class="date">2022-04-27</h4>
 
 </div>
 
 
-<p>Name: Christian Chin Occupation: Student at SUNY Geneseo studying Finance and Data Analytics</p>
+<div id="question-1" class="section level1">
+<h1>Question 1</h1>
+<pre class="r"><code>library(tidyverse)
+library(dplyr)
+library(ggiraph)
+
+library(socviz)
+library(ggthemes)
+library(plotly)
+library(gganimate)
+# install.packages(&quot;gganimate&quot;)
+# 
+# install.packages(&quot;gifski&quot;)
+library(gifski)
+
+
+imf_growth &lt;- read_csv(url(&#39;https://bcdanl.github.io/data/imf_growth_quarterly.csv&#39;))
+imf_growth &lt;- read_csv(url(&#39;https://bcdanl.github.io/data/imf_growth_quarterly.csv&#39;))
+imf_growth &lt;- imf_growth %&gt;% 
+  mutate(gy = round(gy, digits = 3))
+p &lt;- ggplot(imf_growth, aes(x= country, y= gy, fill= country))+
+  geom_col()+ geom_text(aes(label=as.character(gy), hjust = -0.2))+ coord_flip()
+fig_1 &lt;- p + transition_states(quarter, transition_length = 1, state_length =1) +
+  labs(title = &quot;Growth Rate of GDP per Worker: {closest_state}&quot;, x = &quot;&quot;, y= &quot;&quot;)+
+  theme_minimal()+ theme(legend.position = &quot;none&quot;)
+fig_1
+animate(fig_1, renderer = gifski_renderer(&quot;imf_growth.gif&quot;))</code></pre>
+<p><img src="Homework_files/figure-html/unnamed-chunk-1-1.gif" /><!-- --> # Question 2</p>
+</div>
 
 
 

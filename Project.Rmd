@@ -1,0 +1,31 @@
+---
+title: "Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r setup, include=FALSE}
+library(readxl)
+library(ggplot2)
+Tax_Burden_clean <- read_excel("~/Downloads/Tax_Burden_clean.xlsx")
+reg2 <- lm(pack_consumption_pc ~ retail_tax_percentage + mean_pp, data = Tax_Burden_clean) 
+summary(reg2)
+
+p <- ggplot(data = reg2,
+            mapping = aes(x = pack_consumption_pc,
+                          y = retail_tax_percentage,
+                          color = mean_pp))
+p + geom_point() + guides(fill = "none") +
+  labs(x = "Pack Consumption Per Capita", y = "Federal and State tax as a Percentage of Retail Price", color = "Average Cost Per Pack")
+
+Tax_Burden_clean$resids=resid(reg2)
+plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$mean_pp, xlab="Pack Consumption", ylab="Average Cost per pack", main="Pack v.s. Consumption")
+
+
+Tax_Burden_clean$resids=resid(reg2)
+plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$retail_tax_percentage, xlab="Pack Consumption", ylab="Average Cost per pack", main="Pack v.s. Consumption")
+
+```

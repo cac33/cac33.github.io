@@ -1,0 +1,204 @@
+---
+title: "Resume<br><br>"
+menu: main
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: false
+    theme: united
+    highlight: espresso
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(knitr)
+library(here)
+library(lubridate)
+library(kableExtra)
+library(DT)
+library(glue)
+library(readxl)
+library(stringi)
+
+# install.packages("remotes")
+# remotes::install_github("mitchelloharawild/icons")
+# install.packages("fontawesome")
+library(fontawesome)
+
+
+
+#### all other entries #####
+cv_entries <- read_csv("_content/cv_entries.csv") %>%
+  mutate(year_begin = year(date)) %>%
+  mutate(year_end = case_when(
+    date_end == "present" ~ date_end,
+    !is.na(date_end) ~ str_sub(date_end, 1, 4),
+    is.na(date_end) ~ date_end
+  )) %>%
+  mutate(year = ifelse((is.na(year_end) | year_begin == year_end),
+                      year_begin,
+                      str_c(year_begin, " --- ", year_end)))
+
+
+blank_year_when_repeated <- function(cv_entry_tibble){
+  cv_entry_tibble %>% 
+    mutate(row_number = row_number()) %>% 
+    mutate(year_begin = as.character(year_begin),
+           year_begin = case_when(
+             row_number == 1 ~ year_begin,
+             year_begin == lag(year_begin) ~ str_c('<span class="repeated-year">', year_begin, '</span>'),
+             year_begin != lag(year_begin) ~ year_begin
+           )) %>% 
+    mutate(year = if_else(!is.na(lag(year)) & lag(year) == year, 
+                          str_c('<span class="repeated-year">', year, '</span>'),
+                          year))
+}
+```
+
+
+
+# Summary
+
+:::: {style="display: flex;"}
+
+::: {}
+
+I am a student at SUNY Geneseo majoring in **Business Administration** with interest in the field of **finance and data analytics** I make use of **econometric methods and data science tools** to conduct empirical analysis. 
+
+
+My **research** focuses on the **effects of "climate policy "sin taxes"**, specifically taxes on tobacco and consumption rates while displaying the relationship visually. While exisiting research has proven that higher taxes on tobacco products will decrease usage rates, I plan on confirming these studies through linear regression and useful visualizations.
+
+
+As **a student in finance and data science**, my goal is to apply what I've learned at Geneseo to my future endeavors. 
+
+
+
+
+<div style="text-align: right"> Last updated: `r Sys.Date()` </div>
+:::
+
+
+::: {}
+![](bchoe20201027.jpg){width=75%}
+:::
+
+::::
+
+
+
+
+
+
+
+<br>
+
+# Incoming Position
+```{r}
+cv_entries %>% 
+  filter(type == 'incoming_positions', is.na(exclude)) %>%
+  mutate(what = str_c("<span class='cv-entry-title'>", what, "</span><br>", 
+                      where)) %>% 
+  select(year, what) %>% 
+  kbl(padding = 0, col.names = NULL, escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed"))  %>% 
+  column_spec(1, width = "15%")
+
+```
+
+<br>
+
+# Education
+```{r}
+cv_entries %>% 
+  filter(type == 'education') %>% 
+  mutate(what = str_c( "<span class='cv-entry-title'>", 
+                              what, "</span>, ", where,
+                              "<br>", 
+                       ifelse(is.na(additional_info), "", additional_info) 
+                       , "<br>", 
+                       ifelse(is.na(additional_info2), "", additional_info2))) %>% 
+  select(year, what) %>% 
+  kbl(padding = 0, col.names = NULL, escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed"))   %>% 
+  column_spec(1, width = "15%")
+
+```
+
+
+<br>
+
+# Research
+```{r}
+cv_entries %>% 
+  filter(type == 'research') %>% 
+  mutate(what = ifelse(!is.na(additional_info), 
+    str_c("<span class='cv-entry-title'>", what, "</span><br class='work-break'>", where, "<br>", additional_info),
+    str_c("<span class='cv-entry-title'>", what, "</span><br class='work-break'>", where))) %>% 
+  select(year, what) %>% 
+  kbl(padding = 0, col.names = NULL, escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed"))  %>% 
+  column_spec(1, width = "15%") 
+  
+```
+
+<br>
+
+
+
+
+<br>
+
+# Work Experience
+```{r}
+cv_entries %>% 
+  filter(type == 'work', is.na(website)) %>% 
+  mutate(additional_info = replace_na(additional_info, "")) %>% 
+  mutate(what = str_c("<span class='cv-entry-title'>", what, "</span><br class='work-break'>", where, "<br>", additional_info)) %>% 
+  arrange(desc(date)) %>% 
+  select(year, what) %>% 
+  kbl(padding = 0, col.names = NULL, escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed"))   %>% 
+  column_spec(1, width = "15%")
+```
+
+<br>
+
+# Certifications
+```{r}
+cv_entries %>% 
+  filter(type == 'cert') %>% 
+  mutate(what = str_c("<span class='cv-entry-title'>", what, "</span>, ", where)) %>% 
+  select(year_begin, what) %>% 
+  kbl(padding = 0, col.names = NULL, align = c("l", "l"), escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed")) %>% 
+  column_spec(1, width = "15%")  
+```
+
+<br>
+
+
+<br>
+
+
+
+<br>
+
+
+## Clubs & volunteering
+```{r}
+cv_entries %>% 
+  filter(type == 'vol') %>% 
+  mutate(what = str_c("<span class='cv-entry-title'>", what, "</span>, ", where)) %>% 
+  select(year_begin, what) %>% 
+  kbl(padding = 0, col.names = NULL, align = c("l", "l"), escape = FALSE) %>%
+  kable_styling( bootstrap_options = c("hover", "condensed")) %>% 
+  column_spec(1, width = "15%")  
+```
+
+

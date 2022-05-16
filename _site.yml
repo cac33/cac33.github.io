@@ -9,3 +9,7 @@ navbar:
       href: about.html
     - text: "Project Proposal"
       href: Project.Proposal.html
+    - text: "Homework"
+      href: Homework.html
+    - text: "CV"
+      href: cv.html

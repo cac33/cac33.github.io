@@ -2,5 +2,5 @@
 title: "About Me"
 ---
 
-Why I am awesome. 
-Hi
+Name: Christian Chin 
+Occupation: Student at SUNY Geneseo studying Finance and Data Analytics
