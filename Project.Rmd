@@ -7,7 +7,10 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r setup, include=FALSE}
+
+# Plot 1 
+# Showing lower consumption of tobacco when average cost of pack increases. 
+```{r}
 library(readxl)
 library(ggplot2)
 Tax_Burden_clean <- read_excel("~/Downloads/Tax_Burden_clean.xlsx")
@@ -21,11 +24,26 @@ p <- ggplot(data = reg2,
 p + geom_point() + guides(fill = "none") +
   labs(x = "Pack Consumption Per Capita", y = "Federal and State tax as a Percentage of Retail Price", color = "Average Cost Per Pack")
 
+```
+
+# Residuals Plot 
+# Significance with pack consumption decreasing as cost per pack increases.
+
+```{r}
 Tax_Burden_clean$resids=resid(reg2)
 plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$mean_pp, xlab="Pack Consumption", ylab="Average Cost per pack", main="Pack v.s. Consumption")
+```
 
-
-Tax_Burden_clean$resids=resid(reg2)
-plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$retail_tax_percentage, xlab="Pack Consumption", ylab="Average Cost per pack", main="Pack v.s. Consumption")
+# Plot 3
+# Displaying each state's tax % cigarette regarding pack consumption. 
+```{r}
+p <- ggplot(data = Tax_Burden_clean,
+            mapping = aes(x = fed_state_tax_pp, y = LocationDesc, color = pack_consumption_pc))
+p + geom_point() + guides(fill = "none") +
+  labs(x = "Tax Percentage", y = "States", color = "Pack Consumption")
 
 ```
+
+
+
+
