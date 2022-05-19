@@ -7,12 +7,144 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+---
+title: "Sin Tax Project"
+output: html_document
+---
 
-# Plot 1 
-# Showing lower consumption of tobacco when average cost of pack increases. 
 ```{r}
 library(readxl)
-library(ggplot2)
+Tax_Burden_clean <- read_excel("~/Downloads/Tax_Burden_clean.xlsx")
+View(Tax_Burden_clean)
+```
+
+
+
+```{r}
+summary(Tax_Burden_clean)
+#Our motivation for this project is:
+#Smoking is the leading cause of preventable deaths in the US
+#There are large negative externalities associated with smoking 
+#Understanding consumption patterns is important to understanding how to reduce smoking
+
+```
+
+
+
+```{r}
+summary(Tax_Burden_clean)
+
+```
+
+
+```{r}
+#America Map
+#This map is a visualization of per capita pack consumption over time. Darker red means more consumption
+library(tidyverse)
+library(socviz)
+library(ggthemes)
+library(maps)
+library(gganimate)
+library(gifski)
+library(transformr)
+theme_set(theme_minimal())
+
+tax_burden_2019 <- Tax_Burden_clean[Tax_Burden_clean$Year == 2019,]
+
+us_states <- map_data("state")
+tax_burden_2019$region <- tolower(tax_burden_2019$LocationDesc)
+
+tax_burden_2019_state <- left_join(tax_burden_2019, us_states)
+
+p0 <- ggplot(data = tax_burden_2019_state, aes(x = long, y = lat, group = group, fill = `pack_consumption_pc`))
+
+
+p1 <- p0 + geom_polygon(color = "gray90", size = 0.1) +
+    coord_map(projection = "albers", lat0 = 39, lat1 = 45) 
+
+p1 + labs(title = "Pack Consumption (2019)") + theme_map() + labs(fill = "pack_consumption_pc") + scale_fill_gradient(low = "white", high = "#CB454A")
+```
+
+```{r}
+#Consumption Map Over Time
+Tax_Burden_clean$region <- tolower(Tax_Burden_clean$LocationDesc) 
+tax_burden_state <- left_join(Tax_Burden_clean, us_states)
+
+
+p0 <- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `Pack Consumption Per Capita`))
+
+
+ip1 <- p0 + geom_polygon(color = "gray90", size = 0.1) +
+    coord_map(projection = "albers", lat0 = 39, lat1 = 45) 
+
+p2 <- p1 + labs(title = "Pack Consumption Per Capition: {current_frame} \n Source: Healthdata.gov") + theme_map() + scale_fill_gradient(low = "white", high = "#CB454A") + transition_manual(Year) + theme(legend.position = "bottom") + labs(fill = "Packs Per Person Per Year")
+
+anim_save("ConsumptionTimeMap.gif", p2)
+#From this map we can see that consumption has fallen sharply over time. 
+#The following graph shows this:
+```
+
+```{r}
+#Federal and State tax as a Percentage of Retail Price
+
+Tax_Burden_clean$region <- tolower(Tax_Burden_clean$LocationDesc) 
+tax_burden_state <- left_join(Tax_Burden_clean, us_states)
+
+
+z0 <- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `Federal and State tax as a Percentage of Retail Price`))
+
+
+z1 <- z0 + geom_polygon(color = "gray90", size = 0.1) +
+    coord_map(projection = "albers", lat0 = 39, lat1 = 45) 
+
+z2 <- z1 + labs(title = "Tax as a Percentage of Retail Price: {current_frame} \n Source: Healthdata.gov") + theme_map() + scale_fill_gradient(low = "white", high = "#CB454A") + transition_manual(Year) + theme(legend.position = "bottom") + labs(fill = "Percentage")
+
+anim_save("TaxBurden.gif", z2)
+
+```
+```{r}
+#Average tax as a % of price over time
+
+tax_burden_taxes <- Tax_Burden_clean %>%
+  group_by(Year) %>%
+  summarize(avg_tax = mean(`Federal and State tax as a Percentage of Retail Price`))
+
+scatter_plot1 <- ggplot(data = tax_burden_taxes) +
+  geom_point(aes(x = Year,y = avg_tax)) + labs(y = "Average tax % of retail cost")
+scatter_plot1
+```
+```{r}
+#Average tax burden as a %
+
+tax_burden_taxes <- Tax_Burden_clean %>%
+  group_by(Year) %>%
+  summarize(avg_tax = mean(`Federal and State tax as a Percentage of Retail Price`))
+
+scatter_plot1 <- ggplot(data = tax_burden_taxes) +
+  geom_point(aes(x = Year,y = avg_tax)) + labs(y = "Average tax % of retail cost")
+scatter_plot1
+```
+
+```{r}
+#Average tax burden as a %
+
+tax_burden_consumption_avg <- Tax_Burden_clean %>%
+  group_by(Year) %>%
+  summarize(avg_consumption = mean(`Pack Consumption Per Capita`))
+
+scatter_plot2 <- ggplot(data = tax_burden_consumption_avg) +
+  geom_point(aes(x = Year,y = avg_consumption)) + labs(y = "Average per capita consumption")
+scatter_plot2
+```
+
+
+# Plot 1 
+```{r}
+# Showing lower consumption of tobacco when average cost of pack increases.
+# The lighter color the higher the cost per pack.
+# Consumption increases with darker points.
+# Less Consumption with higher average cost per pack as the left side is dense with lighter color dots.
+
 Tax_Burden_clean <- read_excel("~/Downloads/Tax_Burden_clean.xlsx")
 reg2 <- lm(pack_consumption_pc ~ retail_tax_percentage + mean_pp, data = Tax_Burden_clean) 
 summary(reg2)
@@ -25,25 +157,3 @@ p + geom_point() + guides(fill = "none") +
   labs(x = "Pack Consumption Per Capita", y = "Federal and State tax as a Percentage of Retail Price", color = "Average Cost Per Pack")
 
 ```
-
-# Residuals Plot 
-# Significance with pack consumption decreasing as cost per pack increases.
-
-```{r}
-Tax_Burden_clean$resids=resid(reg2)
-plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$mean_pp, xlab="Pack Consumption", ylab="Average Cost per pack", main="Pack v.s. Consumption")
-```
-
-# Plot 3
-# Displaying each state's tax % cigarette regarding pack consumption. 
-```{r}
-p <- ggplot(data = Tax_Burden_clean,
-            mapping = aes(x = fed_state_tax_pp, y = LocationDesc, color = pack_consumption_pc))
-p + geom_point() + guides(fill = "none") +
-  labs(x = "Tax Percentage", y = "States", color = "Pack Consumption")
-
-```
-
-
-
-
