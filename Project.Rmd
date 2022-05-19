@@ -91,7 +91,7 @@ Tax_Burden_clean$region <- tolower(Tax_Burden_clean$LocationDesc)
 tax_burden_state <- left_join(Tax_Burden_clean, us_states)
 
 
-z0 <- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `Federal and State tax as a Percentage of Retail Price`))
+z0 <- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `retail_tax_percentage`))
 
 
 z1 <- z0 + geom_polygon(color = "gray90", size = 0.1) +
@@ -107,7 +107,7 @@ anim_save("TaxBurden.gif", z2)
 
 tax_burden_taxes <- Tax_Burden_clean %>%
   group_by(Year) %>%
-  summarize(avg_tax = mean(`Federal and State tax as a Percentage of Retail Price`))
+  summarize(avg_tax = mean(`retail_tax_percentage`))
 
 scatter_plot1 <- ggplot(data = tax_burden_taxes) +
   geom_point(aes(x = Year,y = avg_tax)) + labs(y = "Average tax % of retail cost")
@@ -118,7 +118,7 @@ scatter_plot1
 
 tax_burden_taxes <- Tax_Burden_clean %>%
   group_by(Year) %>%
-  summarize(avg_tax = mean(`Federal and State tax as a Percentage of Retail Price`))
+  summarize(avg_tax = mean(`retail_tax_percentage`))
 
 scatter_plot1 <- ggplot(data = tax_burden_taxes) +
   geom_point(aes(x = Year,y = avg_tax)) + labs(y = "Average tax % of retail cost")
@@ -130,7 +130,7 @@ scatter_plot1
 
 tax_burden_consumption_avg <- Tax_Burden_clean %>%
   group_by(Year) %>%
-  summarize(avg_consumption = mean(`Pack Consumption Per Capita`))
+  summarize(avg_consumption = mean(`pack_consumption_pc`))
 
 scatter_plot2 <- ggplot(data = tax_burden_consumption_avg) +
   geom_point(aes(x = Year,y = avg_consumption)) + labs(y = "Average per capita consumption")

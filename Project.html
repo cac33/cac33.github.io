@@ -275,13 +275,201 @@ $(document).ready(function () {
 </div>
 
 
+<pre class="r"><code>library(readxl)
+Tax_Burden_clean &lt;- read_excel(&quot;~/Downloads/Tax_Burden_clean.xlsx&quot;)
+View(Tax_Burden_clean)</code></pre>
+<pre class="r"><code>summary(Tax_Burden_clean)</code></pre>
+<pre><code>##  LocationDesc            Year      GeoLocation        retail_tax_percentage
+##  Length:2550        Min.   :1970   Length:2550        Min.   :10.50        
+##  Class :character   1st Qu.:1982   Class :character   1st Qu.:27.10        
+##  Mode  :character   Median :1994   Mode  :character   Median :33.10        
+##                     Mean   :1994                      Mean   :33.99        
+##                     3rd Qu.:2007                      3rd Qu.:40.80        
+##                     Max.   :2019                      Max.   :89.30        
+##  pack_consumption_pc fed_state_tax_pp    mean_pp         state_tax_pp   
+##  Min.   :  9.10      Min.   :0.1000   Min.   : 0.2870   Min.   :0.0200  
+##  1st Qu.: 60.83      1st Qu.:0.2600   1st Qu.: 0.8073   1st Qu.:0.1300  
+##  Median : 95.60      Median :0.4800   Median : 1.8225   Median :0.2400  
+##  Mean   : 94.02      Mean   :0.9903   Mean   : 2.7673   Mean   :0.5858  
+##  3rd Qu.:122.20      3rd Qu.:1.4200   3rd Qu.: 4.4778   3rd Qu.:0.6750  
+##  Max.   :296.20      Max.   :5.9500   Max.   :10.5330   Max.   :4.9400  
+##   cig_tax_rev       
+##  Min.   :2.737e+06  
+##  1st Qu.:2.812e+07  
+##  Median :7.708e+07  
+##  Mean   :1.701e+08  
+##  3rd Qu.:2.004e+08  
+##  Max.   :1.888e+09</code></pre>
+<pre class="r"><code>#Our motivation for this project is:
+#Smoking is the leading cause of preventable deaths in the US
+#There are large negative externalities associated with smoking 
+#Understanding consumption patterns is important to understanding how to reduce smoking</code></pre>
+<pre class="r"><code>summary(Tax_Burden_clean)</code></pre>
+<pre><code>##  LocationDesc            Year      GeoLocation        retail_tax_percentage
+##  Length:2550        Min.   :1970   Length:2550        Min.   :10.50        
+##  Class :character   1st Qu.:1982   Class :character   1st Qu.:27.10        
+##  Mode  :character   Median :1994   Mode  :character   Median :33.10        
+##                     Mean   :1994                      Mean   :33.99        
+##                     3rd Qu.:2007                      3rd Qu.:40.80        
+##                     Max.   :2019                      Max.   :89.30        
+##  pack_consumption_pc fed_state_tax_pp    mean_pp         state_tax_pp   
+##  Min.   :  9.10      Min.   :0.1000   Min.   : 0.2870   Min.   :0.0200  
+##  1st Qu.: 60.83      1st Qu.:0.2600   1st Qu.: 0.8073   1st Qu.:0.1300  
+##  Median : 95.60      Median :0.4800   Median : 1.8225   Median :0.2400  
+##  Mean   : 94.02      Mean   :0.9903   Mean   : 2.7673   Mean   :0.5858  
+##  3rd Qu.:122.20      3rd Qu.:1.4200   3rd Qu.: 4.4778   3rd Qu.:0.6750  
+##  Max.   :296.20      Max.   :5.9500   Max.   :10.5330   Max.   :4.9400  
+##   cig_tax_rev       
+##  Min.   :2.737e+06  
+##  1st Qu.:2.812e+07  
+##  Median :7.708e+07  
+##  Mean   :1.701e+08  
+##  3rd Qu.:2.004e+08  
+##  Max.   :1.888e+09</code></pre>
+<pre class="r"><code>#America Map
+#This map is a visualization of per capita pack consumption over time. Darker red means more consumption
+library(tidyverse)
+library(socviz)
+library(ggthemes)
+library(maps)
+library(gganimate)
+library(gifski)
+library(transformr)
+theme_set(theme_minimal())
+
+tax_burden_2019 &lt;- Tax_Burden_clean[Tax_Burden_clean$Year == 2019,]
+
+us_states &lt;- map_data(&quot;state&quot;)
+tax_burden_2019$region &lt;- tolower(tax_burden_2019$LocationDesc)
+
+tax_burden_2019_state &lt;- left_join(tax_burden_2019, us_states)</code></pre>
+<pre><code>## Joining, by = &quot;region&quot;</code></pre>
+<pre class="r"><code>p0 &lt;- ggplot(data = tax_burden_2019_state, aes(x = long, y = lat, group = group, fill = `pack_consumption_pc`))
+
+
+p1 &lt;- p0 + geom_polygon(color = &quot;gray90&quot;, size = 0.1) +
+    coord_map(projection = &quot;albers&quot;, lat0 = 39, lat1 = 45) 
+
+p1 + labs(title = &quot;Pack Consumption (2019)&quot;) + theme_map() + labs(fill = &quot;pack_consumption_pc&quot;) + scale_fill_gradient(low = &quot;white&quot;, high = &quot;#CB454A&quot;)</code></pre>
+<p><img src="Project_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>#Consumption Map Over Time
+Tax_Burden_clean$region &lt;- tolower(Tax_Burden_clean$LocationDesc) 
+tax_burden_state &lt;- left_join(Tax_Burden_clean, us_states)</code></pre>
+<pre><code>## Joining, by = &quot;region&quot;</code></pre>
+<pre class="r"><code>p0 &lt;- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `Pack Consumption Per Capita`))
+
+
+ip1 &lt;- p0 + geom_polygon(color = &quot;gray90&quot;, size = 0.1) +
+    coord_map(projection = &quot;albers&quot;, lat0 = 39, lat1 = 45) 
+
+p2 &lt;- p1 + labs(title = &quot;Pack Consumption Per Capition: {current_frame} \n Source: Healthdata.gov&quot;) + theme_map() + scale_fill_gradient(low = &quot;white&quot;, high = &quot;#CB454A&quot;) + transition_manual(Year) + theme(legend.position = &quot;bottom&quot;) + labs(fill = &quot;Packs Per Person Per Year&quot;)
+
+anim_save(&quot;ConsumptionTimeMap.gif&quot;, p2)</code></pre>
+<pre><code>## nframes and fps adjusted to match transition
+## 
+Rendering [============================================] at 2.9 fps ~ eta:  0s
+                                                                              </code></pre>
+<pre class="r"><code>#From this map we can see that consumption has fallen sharply over time. 
+#The following graph shows this:</code></pre>
+<pre class="r"><code>#Federal and State tax as a Percentage of Retail Price
+
+Tax_Burden_clean$region &lt;- tolower(Tax_Burden_clean$LocationDesc) 
+tax_burden_state &lt;- left_join(Tax_Burden_clean, us_states)</code></pre>
+<pre><code>## Joining, by = &quot;region&quot;</code></pre>
+<pre class="r"><code>z0 &lt;- ggplot(data = tax_burden_state, aes(x = long, y = lat, group = group, fill = `retail_tax_percentage`))
+
+
+z1 &lt;- z0 + geom_polygon(color = &quot;gray90&quot;, size = 0.1) +
+    coord_map(projection = &quot;albers&quot;, lat0 = 39, lat1 = 45) 
+
+z2 &lt;- z1 + labs(title = &quot;Tax as a Percentage of Retail Price: {current_frame} \n Source: Healthdata.gov&quot;) + theme_map() + scale_fill_gradient(low = &quot;white&quot;, high = &quot;#CB454A&quot;) + transition_manual(Year) + theme(legend.position = &quot;bottom&quot;) + labs(fill = &quot;Percentage&quot;)
+
+anim_save(&quot;TaxBurden.gif&quot;, z2)</code></pre>
+<pre><code>## nframes and fps adjusted to match transition
+## 
+Rendering [&gt;-------------------------------------------] at 3.3 fps ~ eta: 15s
+Rendering [=&gt;------------------------------------------] at 3.2 fps ~ eta: 15s
+Rendering [==&gt;-----------------------------------------] at 3.1 fps ~ eta: 15s
+Rendering [===&gt;----------------------------------------] at 3.3 fps ~ eta: 14s
+Rendering [===&gt;----------------------------------------] at 3.5 fps ~ eta: 13s
+Rendering [====&gt;---------------------------------------] at 3.6 fps ~ eta: 12s
+Rendering [=====&gt;--------------------------------------] at 3.6 fps ~ eta: 12s
+Rendering [======&gt;-------------------------------------] at 3.6 fps ~ eta: 12s
+Rendering [=======&gt;------------------------------------] at 3.7 fps ~ eta: 11s
+Rendering [========&gt;-----------------------------------] at 3.7 fps ~ eta: 11s
+Rendering [=========&gt;----------------------------------] at 3.7 fps ~ eta: 11s
+Rendering [==========&gt;---------------------------------] at 3.7 fps ~ eta: 10s
+Rendering [===========&gt;--------------------------------] at 3.7 fps ~ eta: 10s
+Rendering [============&gt;-------------------------------] at 3.7 fps ~ eta:  9s
+Rendering [=============&gt;------------------------------] at 3.8 fps ~ eta:  9s
+Rendering [==============&gt;-----------------------------] at 3.8 fps ~ eta:  9s
+Rendering [===============&gt;----------------------------] at 3.8 fps ~ eta:  9s
+Rendering [================&gt;---------------------------] at 3.8 fps ~ eta:  8s
+Rendering [=================&gt;--------------------------] at 3.8 fps ~ eta:  8s
+Rendering [==================&gt;-------------------------] at 3.8 fps ~ eta:  7s
+Rendering [===================&gt;------------------------] at 3.8 fps ~ eta:  7s
+Rendering [====================&gt;-----------------------] at 3.8 fps ~ eta:  7s
+Rendering [=====================&gt;----------------------] at 3.8 fps ~ eta:  7s
+Rendering [======================&gt;---------------------] at 3.8 fps ~ eta:  6s
+Rendering [=======================&gt;--------------------] at 3.8 fps ~ eta:  6s
+Rendering [========================&gt;-------------------] at 3.8 fps ~ eta:  6s
+Rendering [=========================&gt;------------------] at 3.8 fps ~ eta:  5s
+Rendering [==========================&gt;-----------------] at 3.9 fps ~ eta:  5s
+Rendering [===========================&gt;----------------] at 3.9 fps ~ eta:  5s
+Rendering [============================&gt;---------------] at 3.9 fps ~ eta:  4s
+Rendering [=============================&gt;--------------] at 3.9 fps ~ eta:  4s
+Rendering [==============================&gt;-------------] at 3.9 fps ~ eta:  4s
+Rendering [===============================&gt;------------] at 3.9 fps ~ eta:  4s
+Rendering [================================&gt;-----------] at 3.9 fps ~ eta:  3s
+Rendering [=================================&gt;----------] at 3.9 fps ~ eta:  3s
+Rendering [==================================&gt;---------] at 3.9 fps ~ eta:  3s
+Rendering [===================================&gt;--------] at 3.9 fps ~ eta:  2s
+Rendering [====================================&gt;-------] at 3.9 fps ~ eta:  2s
+Rendering [=====================================&gt;------] at 3.9 fps ~ eta:  2s
+Rendering [======================================&gt;-----] at 3.9 fps ~ eta:  2s
+Rendering [=======================================&gt;----] at 3.9 fps ~ eta:  1s
+Rendering [========================================&gt;---] at 3.9 fps ~ eta:  1s
+Rendering [=========================================&gt;--] at 3.9 fps ~ eta:  1s
+Rendering [==========================================&gt;-] at 3.9 fps ~ eta:  0s
+Rendering [============================================] at 3.9 fps ~ eta:  0s
+                                                                              </code></pre>
+<pre class="r"><code>#Average tax as a % of price over time
+
+tax_burden_taxes &lt;- Tax_Burden_clean %&gt;%
+  group_by(Year) %&gt;%
+  summarize(avg_tax = mean(`retail_tax_percentage`))
+
+scatter_plot1 &lt;- ggplot(data = tax_burden_taxes) +
+  geom_point(aes(x = Year,y = avg_tax)) + labs(y = &quot;Average tax % of retail cost&quot;)
+scatter_plot1</code></pre>
+<p><img src="Project_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<pre class="r"><code>#Average tax burden as a %
+
+tax_burden_taxes &lt;- Tax_Burden_clean %&gt;%
+  group_by(Year) %&gt;%
+  summarize(avg_tax = mean(`retail_tax_percentage`))
+
+scatter_plot1 &lt;- ggplot(data = tax_burden_taxes) +
+  geom_point(aes(x = Year,y = avg_tax)) + labs(y = &quot;Average tax % of retail cost&quot;)
+scatter_plot1</code></pre>
+<p><img src="Project_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<pre class="r"><code>#Average tax burden as a %
+
+tax_burden_consumption_avg &lt;- Tax_Burden_clean %&gt;%
+  group_by(Year) %&gt;%
+  summarize(avg_consumption = mean(`pack_consumption_pc`))
+
+scatter_plot2 &lt;- ggplot(data = tax_burden_consumption_avg) +
+  geom_point(aes(x = Year,y = avg_consumption)) + labs(y = &quot;Average per capita consumption&quot;)
+scatter_plot2</code></pre>
+<p><img src="Project_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <div id="plot-1" class="section level1">
 <h1>Plot 1</h1>
-</div>
-<div id="showing-lower-consumption-of-tobacco-when-average-cost-of-pack-increases." class="section level1">
-<h1>Showing lower consumption of tobacco when average cost of pack increases.</h1>
-<pre class="r"><code>library(readxl)
-library(ggplot2)
+<pre class="r"><code># Showing lower consumption of tobacco when average cost of pack increases.
+# The lighter color the higher the cost per pack.
+# Consumption increases with darker points.
+# Less Consumption with higher average cost per pack as the left side is dense with lighter color dots.
+
 Tax_Burden_clean &lt;- read_excel(&quot;~/Downloads/Tax_Burden_clean.xlsx&quot;)
 reg2 &lt;- lm(pack_consumption_pc ~ retail_tax_percentage + mean_pp, data = Tax_Burden_clean) 
 summary(reg2)</code></pre>
@@ -311,27 +499,7 @@ summary(reg2)</code></pre>
                           color = mean_pp))
 p + geom_point() + guides(fill = &quot;none&quot;) +
   labs(x = &quot;Pack Consumption Per Capita&quot;, y = &quot;Federal and State tax as a Percentage of Retail Price&quot;, color = &quot;Average Cost Per Pack&quot;)</code></pre>
-<p><img src="Project_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-</div>
-<div id="residuals-plot" class="section level1">
-<h1>Residuals Plot</h1>
-</div>
-<div id="significance-with-pack-consumption-decreasing-as-cost-per-pack-increases." class="section level1">
-<h1>Significance with pack consumption decreasing as cost per pack increases.</h1>
-<pre class="r"><code>Tax_Burden_clean$resids=resid(reg2)
-plot(Tax_Burden_clean$pack_consumption_pc, Tax_Burden_clean$mean_pp, xlab=&quot;Pack Consumption&quot;, ylab=&quot;Average Cost per pack&quot;, main=&quot;Pack v.s. Consumption&quot;)</code></pre>
-<p><img src="Project_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
-</div>
-<div id="plot-3" class="section level1">
-<h1>Plot 3</h1>
-</div>
-<div id="displaying-each-states-tax-cigarette-regarding-pack-consumption." class="section level1">
-<h1>Displaying each state’s tax % cigarette regarding pack consumption.</h1>
-<pre class="r"><code>p &lt;- ggplot(data = Tax_Burden_clean,
-            mapping = aes(x = fed_state_tax_pp, y = LocationDesc, color = pack_consumption_pc))
-p + geom_point() + guides(fill = &quot;none&quot;) +
-  labs(x = &quot;Tax Percentage&quot;, y = &quot;States&quot;, color = &quot;Pack Consumption&quot;)</code></pre>
-<p><img src="Project_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p><img src="Project_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 </div>
 
 

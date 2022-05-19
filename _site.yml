@@ -13,3 +13,5 @@ navbar:
       href: Homework.html
     - text: "CV"
       href: cv.html
+    - text: "Project"
+      href: Project.html
